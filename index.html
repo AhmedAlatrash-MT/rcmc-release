@@ -74,6 +74,120 @@ tr.valid td{background:color-mix(in srgb,var(--ok) 6%,transparent)}
 </section>
 <div class="meta"><span id="updated"></span><span>Dates are Riyadh time.</span><span>Master Works</span></div>
 </div>
+<script type="application/json" id="rt-state">{"cadence":{"PROD":3,"SIT":4,"UAT":1},"cancel":{},"custom":[{"id":"my-mwkhzul9","product":"P+","title":"Operational Dashboard","window":"PROD"},{"id":"my-mwkig76r","product":"P+","title":"تصويت","window":"PROD"},{"id":"my-mwkihyx1","product":"P+","title":"إشكالية حرجة في شهادة الإنجاز – وجود فروقات في البيانات","window":"PROD"},{"id":"my-mwkiigzr","product":"P+","title":"إشكالية في تاريخ اعتماد الطلب النهائي – طلب التغيير وشهادة الإنجاز","window":"PROD"},{"id":"my-mwkiknyc","product":"P+","title":"مشكلة في شهادات الانجاز مع يسير","window":"PROD"}],"extra":[],"from":"2026-11-15","hidden":{"dp-U01":"Diwan STG log settings","gh-pplus4-backend#19984":"RCMC P+ - Feasibility check for weekly automated email digests (late items, risks and issues)"},"names":{"gh-pplus4-backend#19169":"RCMC P+ — ServiceNow Integration","gh-pplus4-backend#19545":"RCMC P+ — Penny Integration","my-mwkig76r":"إشكالية في تقرير طلبات التغيير – عدم ظهور تصويت الأعضاء"},"notes":{"dp-C05":"client did no test on STG yet","dp-R05":"PKG sent to client already","my-mwkig76r":"MT Ticket #19212","my-mwkihyx1":"client did no test on STG yet","my-mwkiigzr":"client did no test on STG yet","my-mwkiknyc":"client did no test on STG yet"},"pins":{"dp-C05":"2026-11-19|SIT","dp-R05":"2026-11-18|PROD","dp-U01":"none","gh-pplus4-backend#19169":"2026-11-23|UAT","gh-pplus4-backend#19249":"none","gh-pplus4-backend#19250":"none","gh-pplus4-backend#19545":"none","gh-pplus4-backend#20122":"2026-11-30|UAT","my-mwkhzul9":"2026-11-18|PROD","my-mwkig76r":"2026-11-18|PROD","my-mwkihyx1":"2026-11-19|SIT","my-mwkiigzr":"2026-11-19|SIT","my-mwkiknyc":"2026-11-19|SIT"},"valid":{"dp-R05":"2026-11-17T10:09:50.376Z","my-mwkhzul9":"2026-11-17T09:36:45.180Z","my-mwkig76r":"2026-11-17T10:09:47.293Z"},"weeks":4,"features":[{"id":"gh-pplus4-backend#19249","title":"RCMC - Automated Notifications (P+)","product":"P+","status":"In client UAT","window":"PROD"},{"id":"gh-pplus4-backend#19169","title":"RCMC - Pplus & Service Now Integration","product":"P+","status":"On STG","window":"UAT"},{"id":"gh-pplus4-backend#19545","title":"RCMC P+ — Penny Change Request items: 5 UAT2 changes","product":"P+","status":"On STG","window":"UAT"},{"id":"gh-pplus4-backend#19984","title":"RCMC P+ - Feasibility check for weekly automated email digests (late items, risks and issues)","product":"P+","status":"On hold","window":""},{"id":"gh-pplus4-backend#20122","title":"RCMC - Diwan - Full Permissions Groups","product":"Diwan","status":"In development","window":"SIT"},{"id":"dp-U01","title":"Diwan STG log settings","product":"Diwan","status":"STG deployment requested","window":"SIT"},{"id":"dp-C05","title":"Completion-certificate hotfix re-deploy (X03, T09, T04)","product":"P+","status":"STG deployment requested","window":"SIT"},{"id":"dp-R05","title":"Project-plan reports fix","product":"P+","status":"Prod deployment requested","window":"PROD"}],"updated":"2026-11-17"}</script>
+<script>
+(function(){
+var st=JSON.parse(document.getElementById('rt-state').textContent);
+var TYPES=['UAT','PROD','SIT'],DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var cad=Object.assign({UAT:1,PROD:3,SIT:4},st.cadence||{}),pins=st.pins||{},valid=st.valid||{},notes=st.notes||{},names=st.names||{},hidden=st.hidden||{},extra=st.extra||[],cancel=st.cancel||{},weeks=Number(st.weeks)||2;
+function today(){return new Date(Date.now()+3*3600e3).toISOString().slice(0,10)}
+function addDays(d,k){return new Date(Date.parse(d+'T00:00:00Z')+k*86400e3).toISOString().slice(0,10)}
+function fmtDay(d){return new Date(d+'T00:00:00Z').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',timeZone:'UTC'})}
+function tn(t){return t==='PROD'?'PROD deployment':t}
+function lab(c){return c.date?fmtDay(c.date)+' · '+c.type:c.title}
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+var items=(st.features||[]).concat((st.custom||[]).map(function(c){return{id:c.id,title:c.title,product:c.product||'',status:'',window:c.window||''}})).filter(function(r){return!hidden[r.id]}).map(function(r){return Object.assign({},r,{title:names[r.id]||r.title})});
+var t0=today(),until=addDays(t0,weeks*7),wins=new Map();
+for(var i=0;i<weeks*7;i++){var day=addDays(t0,i),dow=new Date(day+'T00:00:00Z').getUTCDay();TYPES.forEach(function(t){if(cad[t]===dow)wins.set(day+'|'+t,{id:day+'|'+t,date:day,type:t,items:[]})})}
+extra.forEach(function(w){if(w.date>=t0&&w.date<until)wins.set(w.date+'|'+w.type,{id:w.date+'|'+w.type,date:w.date,type:w.type,items:[],extra:true})});
+Object.keys(cancel).forEach(function(k){if(cancel[k])wins.delete(k)});
+var cols=Array.from(wins.values()).sort(function(a,b){return a.date.localeCompare(b.date)||TYPES.indexOf(a.type)-TYPES.indexOf(b.type)});
+var un={id:'none',title:'Not yet scheduled',items:[]},ea={id:'earlier',title:'Earlier date',items:[]},la={id:'later',title:'Later',items:[]};
+function auto(t){if(!t)return un;for(var j=0;j<cols.length;j++)if(cols[j].type===t&&cols[j].date>=t0)return cols[j];return la}
+var placed=items.map(function(r){var p=pins[r.id],tg;if(p==='none')tg=un;else if(p){var d=p.slice(0,10);tg=wins.get(p)||(d<t0?ea:d>=until?la:auto(r.window))}else tg=auto(r.window);var it=Object.assign({},r,{valid:!!valid[r.id],note:notes[r.id]||'',target:tg});tg.items.push(it);return it});
+var all=[un].concat(ea.items.length?[ea]:[],cols,la.items.length?[la]:[]),nx=(cols.find(function(c){return c.date>=t0})||{}).id;
+var cd=document.getElementById('cadence');TYPES.forEach(function(t){cd.appendChild(el('span','',tn(t)+' every '+DAYS[cad[t]]))});
+document.getElementById('updated').textContent=st.updated?'Plan updated '+fmtDay(st.updated):'';
+var kb=document.getElementById('kb');
+all.forEach(function(c){var col=el('div','col'+(c.id===nx?' next':'')+(c.date?'':' ghost'));
+if(c.date){col.appendChild(el('div','cd',fmtDay(c.date)+(c.date===t0?' · today':'')));col.appendChild(el('span','pill w-'+c.type,tn(c.type)+(c.extra?' · extra':'')))}else col.appendChild(el('div','cd',c.title));
+col.appendChild(el('div','cn',c.items.length?c.items.length+(c.items.length===1?' feature':' features'):'Nothing planned'));
+c.items.forEach(function(r){var k=el('div','k'+(r.valid?' valid':''));k.dir='auto';if(r.valid){var v=el('div','vt');v.appendChild(el('span','pill ok','Confirmed'));k.appendChild(v)}k.appendChild(el('div','t',r.title));k.appendChild(el('div','s',[r.product,r.status].filter(Boolean).join(' · ')));if(r.note)k.appendChild(el('div','n',r.note));col.appendChild(k)});
+kb.appendChild(col)});
+var ord=new Map([['none',-1],['earlier',0]].concat(cols.map(function(c,i){return[c.id,i+1]}),[['later',999]]));
+placed.sort(function(a,b){return(ord.get(a.target.id)-ord.get(b.target.id))||a.title.localeCompare(b.title)});
+var tb=document.getElementById('tbody');
+placed.forEach(function(r){var tr=el('tr',r.valid?'valid':''),c1=el('td');c1.dir='auto';c1.appendChild(el('div','',r.title));c1.appendChild(el('div','s',r.product));tr.appendChild(c1);tr.appendChild(el('td','hide-sm',r.status||'—'));var c3=el('td');c3.appendChild(el('span',r.target.date?'pill w-'+r.target.type:'pill',lab(r.target)));tr.appendChild(c3);var c4=el('td');c4.appendChild(r.valid?el('span','pill ok','Confirmed'):el('span','s','Not yet'));tr.appendChild(c4);var c5=el('td','s',r.note);c5.dir='auto';tr.appendChild(c5);tb.appendChild(tr)});
+})();
+</script>
+</body>
+</html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>RCMC Release Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Almarai:wght@400;700&display=swap">
+<style>
+:root{--page:#f4f6fb;--card:#fff;--hover:#eef1f8;--border:#e3e7f0;--ink:#0f1b3d;--ink-2:#3f4a66;--muted:#5f6a85;--brand:#0a458c;--green:#a2d45e;--ok:#3f7a14;--uat:#0a458c;--prod:#3f7a14;--sit:#6b4c94;--shadow:0 1px 2px rgba(15,27,61,.04),0 8px 24px -12px rgba(15,27,61,.12);--f:"Basic Sans","Outfit","Almarai","Segoe UI",system-ui,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--page:#071a33;--card:#0d2442;--hover:#123058;--border:#1d3d66;--ink:#eef3fb;--ink-2:#c3d0e4;--muted:#93a6c4;--brand:#3ac1cd;--ok:#a2d45e;--uat:#3ac1cd;--prod:#a2d45e;--sit:#b9a0dc;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--f);font-size:14px;line-height:22px}
+.rt{max-width:1440px;margin:0 auto;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:24px}
+.band{position:relative;overflow:hidden;background:#0a458c;color:#fff;border-radius:16px;border-bottom:4px solid var(--green);padding:clamp(20px,4vw,32px) clamp(20px,4vw,40px)}
+.band::after{content:"";position:absolute;right:28px;top:28px;width:56px;height:56px;border-top:14px solid rgba(162,212,94,.35);border-right:14px solid rgba(162,212,94,.35);pointer-events:none}
+.logo{display:block;width:clamp(110px,20vw,150px);height:auto;margin-bottom:18px}
+.eyebrow{font-size:11px;line-height:16px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.9}
+h1{font-weight:700;font-size:clamp(26px,4vw,34px);line-height:1.15;letter-spacing:-.015em;margin:4px 0 0;text-wrap:balance}
+.band p{margin:8px 0 0;max-width:44rem}
+.cadence{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.cadence span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.35);border-radius:9999px;padding:3px 12px;font-size:13px;font-weight:600}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:clamp(16px,2.5vw,24px);min-width:0}
+h2{font-size:18px;line-height:26px;font-weight:700;margin:0}
+.note{color:var(--muted);font-size:13px;line-height:20px;margin:4px 0 16px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:9999px;font-size:12px;line-height:18px;font-weight:600;white-space:nowrap;background:var(--hover);color:var(--ink-2)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.w-UAT{color:var(--uat);background:color-mix(in srgb,var(--uat) 12%,transparent)}
+.w-PROD{color:var(--prod);background:color-mix(in srgb,var(--prod) 14%,transparent)}
+.w-SIT{color:var(--sit);background:color-mix(in srgb,var(--sit) 14%,transparent)}
+.pill.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.kb{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(15rem,1fr);gap:12px;overflow-x:auto;padding-bottom:8px;align-items:start}
+.col{background:var(--hover);border-radius:12px;padding:10px;min-height:9rem}
+.col.next{box-shadow:inset 0 3px 0 var(--green)}
+.col.ghost{background:transparent;border:1px dashed var(--border)}
+.cd{font-weight:700}
+.cn{color:var(--muted);font-size:12px;margin:2px 0 8px}
+.k{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:8px;font-size:13px;line-height:18px;box-shadow:var(--shadow)}
+.k.valid{border-color:var(--ok)}
+.k .t{font-weight:600}
+.s{color:var(--muted);font-size:12px}
+.k .n{color:var(--ink-2);font-size:12px;font-style:italic;margin-top:4px}
+.vt{margin-bottom:4px}
+.tw{overflow-x:auto;border:1px solid var(--border);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:13px;line-height:20px}
+th{text-align:start;font-size:12px;font-weight:600;color:var(--ink-2);background:var(--hover);padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+tbody tr:last-child td{border-bottom:0}
+tr.valid td{background:color-mix(in srgb,var(--ok) 6%,transparent)}
+[dir=auto]{unicode-bidi:plaintext}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:12px}
+@media (max-width:720px){.hide-sm{display:none}}
+</style>
+</head>
+<body>
+<div class="rt">
+<header class="band">
+<svg class="logo" role="img" aria-label="Master Works" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1163.63 667.53"><polygon fill="#a2d45e" points="1053.85 474.47 1011.83 474.47 1011.83 426.27 963.75 426.27 963.75 384.26 1013.91 384.26 1020.19 384.26 1053.85 384.26 1053.85 474.47"/><g fill="#fff"><path d="M233.2,485.18c-2.41,8.95-3.79,17.22-4.47,21.35h-1.04c-.69-4.13-2.75-13.09-4.82-21.35l-28.24-100.93h-38.58l-28.58,101.61c-2.07,8.27-3.79,15.16-4.82,20.67h-1.04c-.68-5.5-2.41-11.36-4.47-20.67l-26.18-101.61h-44.43l49.94,162.57h47.87l27.55-91.96c1.04-4.82,2.41-12.75,2.77-16.18h1.02c.35,3.43,1.73,11.36,3.11,16.18l26.53,91.96h48.56l47.87-162.57h-42.71l-25.83,100.93h0Z"/><path d="M391.93,382.2c-50.98,0-85.07,34.78-85.07,83.69s34.09,83.01,85.07,83.01,85.07-34.1,85.07-83.01-33.75-83.69-85.07-83.69h0ZM391.93,514.46c-25.83,0-42.37-19.99-42.37-48.57s16.54-49.25,42.37-49.25,42.37,20.31,42.37,49.25-16.54,48.57-42.37,48.57Z"/><polygon points="784.31 384.26 736.44 384.26 689.6 444.53 669.27 444.53 669.27 345.94 627.26 345.94 627.26 546.83 669.27 546.83 669.27 476.91 685.12 476.91 739.88 546.83 791.2 546.83 720.59 461.76 784.31 384.26"/><path d="M485.17,273.7v-57.16c0-39.62-25.84-63.72-72.34-63.72-43.73,0-70.26,20.66-70.26,51.31,0,1.34.06,2.61.15,3.83h37.91c-.05-.49-.17-.89-.17-1.42,0-13.43,11.02-21.35,30.99-21.35,21.7,0,32.72,12.06,32.72,30.31v7.92h-2.75c-64.07,1.04-103.68,12.4-103.68,51.32,0,26.87,19.63,44.78,55.11,44.78s48.57-16.88,53.39-26.18c2.75,17.57,14.47,25.83,35.48,25.83,6.55,0,12.34-.8,16.14-1.48v-33.18c-.99.13-2.02.21-3.06.21-6.88,0-9.63-2.75-9.63-11.02h0ZM444.17,260.27c0,13.79-14.81,27.22-40.3,27.22-16.18,0-25.14-6.21-25.14-17.23,0-16.18,18.6-23.07,62.68-23.76h2.75v13.77h0Z"/><path d="M591.52,288.86c-24.45,0-47.52-15.5-52-19.63l-21.01,25.83c5.86,4.82,27.9,24.45,74.05,24.45,43.05,0,69.92-18.61,69.92-47.87-.68-62.34-96.43-36.17-96.43-70.27,0-11.02,9.29-18.94,26.51-18.94s28.95,8.75,29.23,22.58h37.5c.24-1.75.44-3.92.44-6.39,0-26.53-26.87-45.8-65.79-45.8-40.98,0-67.85,19.97-67.85,50.29,0,59.58,93.68,42.01,93.68,70.26,0,9.3-9.29,15.5-28.24,15.5h-.01Z"/><path d="M701.96,251.66c0,45.12,20.67,67.86,63.04,67.86,14.16,0,25.01-2.61,32.58-5.32v-37.7c-3.65,2.52-12.54,7.54-25.68,7.54-19.29,0-27.9-10.68-27.9-33.76v-63.02h58.9v-32.38h-61.5v-36.25h-38.39v36.25h-26.17v32.38h25.14v64.4h-.02Z"/><path d="M976.37,229.27c0-43.75-27.21-76.46-74.74-76.46-49.94,0-82.31,34.78-82.31,83.69s32.72,83.01,86.8,83.01c32.71,0,56.48-12.75,68.88-28.94l-21.35-23.08c-6.89,8.27-19.63,19.29-43.06,19.29-28.58,0-45.11-16.54-48.91-40.64h112.98s1.72-6.55,1.72-16.88h-.01ZM861.68,222.38c3.8-22.72,18.95-36.85,39.96-36.85s34.78,15.5,35.14,36.85h-75.1Z"/><path d="M247.33,153.16c-29.28,0-45.82,16.53-53.39,37.19-8.26-22.72-27.9-37.19-56.83-37.19-24.37,0-39.66,11.55-48.57,27.31v-25.59h-42.02v162.57h42.02v-84.39c0-19.97,11.02-43.75,36.51-43.75,20.67,0,31.35,13.43,31.35,34.45v93.68h42.02v-84.39c0-19.97,11.36-43.75,36.85-43.75,20.67,0,31.35,13.43,31.35,34.45v93.68h42.02v-99.2c0-37.89-22.04-65.09-61.31-65.09v.02Z"/><path d="M1117.1,156.95c-6.89-2.75-14.47-4.13-23.08-4.13-24.11,0-37.55,16.53-43.75,37.19h-.18v-35.13h-38.39v162.57h42.02v-80.6c0-29.28,16.88-44.09,35.14-44.09,7.23,0,12.74,1.73,17.56,5.16l10.68-40.98h0Z"/><path d="M843.31,430.75c0-11.02,9.29-18.94,26.51-18.94s28.95,8.75,29.23,22.58h37.5c.24-1.75.44-3.92.44-6.39,0-26.53-26.87-45.8-65.79-45.8-40.98,0-67.85,19.97-67.85,50.29,0,59.58,93.68,42.02,93.68,70.26,0,9.31-9.29,15.5-28.24,15.5-24.45,0-47.52-15.5-52-19.63l-21.01,25.83c5.86,4.82,27.9,24.45,74.05,24.45,43.05,0,69.92-18.61,69.92-47.87-.68-62.34-96.43-36.17-96.43-70.27h-.01Z"/><path d="M541.48,419.39h-.18v-35.14h-38.39v162.57h42.02v-80.6c0-29.28,16.88-44.09,35.14-44.09,7.23,0,12.74,1.73,17.56,5.16l10.68-40.98c-6.89-2.75-14.47-4.13-23.08-4.13-24.11,0-37.55,16.53-43.75,37.19v.02Z"/></g></svg>
+<div class="eyebrow">P+ · S+ · Diwan</div>
+<h1>RCMC Release Tracker</h1>
+<p>Which features go to SIT, client UAT and production, and when. Windows follow the agreed release cadence; Master Works keeps the plan current.</p>
+<div class="cadence" id="cadence"></div>
+</header>
+<section class="card">
+<h2>Release board</h2>
+<p class="note">Each column is a release window; the highlighted one is next. A green edge means the date is confirmed.</p>
+<div class="kb" id="kb"></div>
+</section>
+<section class="card">
+<h2>Feature plan</h2>
+<p class="note">Every feature in the plan, with its release window and whether the date is confirmed.</p>
+<div class="tw"><table><thead><tr><th>Feature</th><th class="hide-sm">Where it stands</th><th>Release window</th><th>Confirmed</th><th>Note</th></tr></thead><tbody id="tbody"></tbody></table></div>
+</section>
+<div class="meta"><span id="updated"></span><span>Dates are Riyadh time.</span><span>Master Works</span></div>
+</div>
 <script type="application/json" id="rt-state">{"cadence":{"PROD":3,"SIT":4,"UAT":1},"cancel":{},"custom":[{"id":"my-mwkhzul9","product":"P+","title":"Operational Dashboard","window":"PROD"},{"id":"my-mwkig76r","product":"P+","title":"تصويت","window":"PROD"},{"id":"my-mwkihyx1","product":"P+","title":"إشكالية حرجة في شهادة الإنجاز – وجود فروقات في البيانات","window":"PROD"},{"id":"my-mwkiigzr","product":"P+","title":"إشكالية في تاريخ اعتماد الطلب النهائي – طلب التغيير وشهادة الإنجاز","window":"PROD"},{"id":"my-mwkiknyc","product":"P+","title":"مشكلة في شهادات الانجاز مع يسير","window":"PROD"}],"extra":[],"hidden":{"dp-U01":1,"gh-pplus4-backend#19984":1},"names":{"gh-pplus4-backend#19169":"RCMC P+ — ServiceNow Integration","gh-pplus4-backend#19545":"RCMC P+ — Penny Integration","my-mwkig76r":"إشكالية في تقرير طلبات التغيير – عدم ظهور تصويت الأعضاء"},"notes":{"dp-C05":"client did no test on STG yet","dp-R05":"PKG sent to client already","my-mwkig76r":"MT Ticket #19212","my-mwkihyx1":"client did no test on STG yet","my-mwkiigzr":"client did no test on STG yet","my-mwkiknyc":"client did no test on STG yet"},"pins":{"dp-C05":"2026-11-19|SIT","dp-R05":"2026-11-18|PROD","dp-U01":"none","gh-pplus4-backend#19169":"2026-11-23|UAT","gh-pplus4-backend#19249":"none","gh-pplus4-backend#19250":"none","gh-pplus4-backend#19545":"none","gh-pplus4-backend#20122":"none","my-mwkhzul9":"2026-11-18|PROD","my-mwkig76r":"2026-11-18|PROD","my-mwkihyx1":"2026-11-19|SIT","my-mwkiigzr":"2026-11-19|SIT","my-mwkiknyc":"2026-11-19|SIT"},"valid":{"dp-R05":1,"my-mwkhzul9":1,"my-mwkig76r":1},"weeks":2,"features":[{"id":"gh-pplus4-backend#19249","title":"RCMC - Automated Notifications (P+)","product":"P+","status":"In client UAT","window":"PROD"},{"id":"gh-pplus4-backend#19169","title":"RCMC - Pplus & Service Now Integration","product":"P+","status":"On STG","window":"UAT"},{"id":"gh-pplus4-backend#19545","title":"RCMC P+ — Penny Change Request items: 5 UAT2 changes","product":"P+","status":"On STG","window":"UAT"},{"id":"gh-pplus4-backend#19984","title":"Feasibility check","product":"P+","status":"On hold","window":""},{"id":"gh-pplus4-backend#20122","title":"RCMC - Diwan - Full Permissions Groups","product":"Diwan","status":"In development","window":"SIT"},{"id":"dp-U01","title":"Diwan STG log settings","product":"Diwan","status":"STG deployment requested","window":"SIT"},{"id":"dp-C05","title":"Completion-certificate hotfix re-deploy (X03, T09, T04)","product":"P+","status":"STG deployment requested","window":"SIT"},{"id":"dp-R05","title":"Project-plan reports fix","product":"P+","status":"Prod deployment requested","window":"PROD"}],"updated":"2026-11-17"}</script>
 <script>
 (function(){
